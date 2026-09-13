@@ -3,23 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FPS1024 personal APT repository for iOS and iPadOS.">
+    <meta name="theme-color" content="#147d64">
     <title>FPS1024 Sileo Repo</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>FPS1024 Sileo Repo</h1>
+    <header class="site-header">
+        <div class="shell header-inner">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">F</span>
+                <span>
+                    <strong class="brand-name">FPS1024</strong>
+                    <span class="brand-subtitle">iOS software repository</span>
+                </span>
+            </div>
+            <span class="status">
+                <span class="status-dot" aria-hidden="true"></span>
+                Online
+            </span>
+        </div>
+    </header>
 
-    <p>Personal APT repository for iOS / iPadOS.</p>
+    <main>
+        <section class="shell overview">
+            <div class="intro">
+                <p class="category">Personal APT repository</p>
+                <h1>FPS1024 Sileo Repo</h1>
+                <p class="lead">
+                    A lightweight package source for jailbroken iOS and iPadOS devices.
+                    Package indexes are rebuilt automatically by GitHub Actions.
+                </p>
+                <div class="actions">
+                    <a class="button button-primary" href="https://github.com/FPS1024/sileo.github.io">
+                        View on GitHub
+                    </a>
+                    <a class="text-link" href="Packages">Browse package index</a>
+                </div>
+            </div>
 
-    <h2>Repository</h2>
+            <dl class="stats" aria-label="Repository details">
+                <div class="stat">
+                    <dt>Architecture</dt>
+                    <dd>iphoneos-arm64</dd>
+                </div>
+                <div class="stat">
+                    <dt>Release</dt>
+                    <dd>Stable / iOS</dd>
+                </div>
+                <div class="stat stat-wide">
+                    <dt>Index formats</dt>
+                    <dd>Packages, bz2, gz, xz</dd>
+                </div>
+            </dl>
+        </section>
 
-    <p>
-        <code>https://fps1024.github.io/sileo.github.io/</code>
-    </p>
+        <section class="shell source-section" aria-labelledby="source-heading">
+            <div class="section-heading">
+                <p class="category">Source URL</p>
+                <h2 id="source-heading">Add this repository to Sileo</h2>
+            </div>
 
-    <h2>Packages</h2>
+            <div class="source-box">
+                <code id="repository-url">https://fps1024.github.io/sileo.github.io/</code>
+                <button
+                    class="copy-button"
+                    type="button"
+                    data-copy="https://fps1024.github.io/sileo.github.io/"
+                    aria-label="Copy repository URL"
+                >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                        <rect width="8" height="8" x="14" y="14" rx="2" ry="2"></rect>
+                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                    </svg>
+                    <span class="copy-label">Copy</span>
+                </button>
+            </div>
 
-    <p>
-        Packages are distributed through Sileo / APT.
-    </p>
+            <ol class="steps">
+                <li>
+                    <span class="step-number">01</span>
+                    <span>Open Sileo and go to Sources.</span>
+                </li>
+                <li>
+                    <span class="step-number">02</span>
+                    <span>Tap + and paste the repository URL.</span>
+                </li>
+                <li>
+                    <span class="step-number">03</span>
+                    <span>Refresh the source, then install a package.</span>
+                </li>
+            </ol>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="shell footer-inner">
+            <span>FPS1024 Sileo Repo</span>
+            <span>Powered by GitHub Pages</span>
+        </div>
+    </footer>
+
+    <script>
+        const copyButton = document.querySelector("[data-copy]");
+
+        copyButton.addEventListener("click", async () => {
+            const value = copyButton.dataset.copy;
+            const label = copyButton.querySelector(".copy-label");
+
+            try {
+                await navigator.clipboard.writeText(value);
+            } catch {
+                const input = document.createElement("textarea");
+                input.value = value;
+                input.setAttribute("readonly", "");
+                input.style.position = "fixed";
+                input.style.opacity = "0";
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand("copy");
+                input.remove();
+            }
+
+            label.textContent = "Copied";
+            copyButton.classList.add("is-copied");
+
+            window.setTimeout(() => {
+                label.textContent = "Copy";
+                copyButton.classList.remove("is-copied");
+            }, 1600);
+        });
+    </script>
 </body>
 </html>

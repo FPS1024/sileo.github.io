@@ -8,6 +8,7 @@ on:
       - 'debs/**'
       - 'Release'
       - 'index.html'
+      - 'styles.css'
       - '.github/workflows/repo.yml'
   workflow_dispatch:
 
