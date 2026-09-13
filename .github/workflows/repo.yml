@@ -1,0 +1,86 @@
+name: Build and Deploy Sileo Repo
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'debs/**'
+      - 'Release'
+      - 'index.html'
+      - '.github/workflows/repo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install APT tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev bzip2
+
+      - name: Generate Packages
+        run: |
+          set -e
+
+          rm -f Packages Packages.bz2
+
+          if find debs -type f -name '*.deb' | grep -q .; then
+            dpkg-scanpackages -m debs /dev/null > Packages
+          else
+            echo "No .deb packages found."
+            touch Packages
+          fi
+
+          bzip2 -kf Packages
+
+          echo "===== Packages ====="
+          cat Packages
+
+      - name: Prepare Pages artifact
+        run: |
+          touch .nojekyll
+
+          echo "===== Repository files ====="
+          find . -maxdepth 2 -type f \
+            ! -path './.git/*' \
+            -print | sort
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    needs: build
+
+    permissions:
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
