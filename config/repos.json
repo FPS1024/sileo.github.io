@@ -23,6 +23,20 @@
     {
       "repo": "FPS1024/Zola",
       "asset": "*.deb"
+    },
+    {
+      "repo": "owngoal-dev/claude",
+      "asset": "*.deb",
+      "exclude_assets": [
+        "*_iphoneos-arm64e.deb"
+      ]
+    },
+    {
+      "repo": "owngoal-dev/codex",
+      "asset": "*.deb",
+      "exclude_assets": [
+        "*_iphoneos-arm64e.deb"
+      ]
     }
   ]
 }
