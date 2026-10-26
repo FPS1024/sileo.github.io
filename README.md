@@ -92,12 +92,11 @@ The build generates:
 - `Packages.xz`
 - `Release` (with MD5 and SHA-256 checksums)
 
-## Migration Note
+## Package Storage
 
-The legacy `debs/` directory and the root `Release` file are still in the
-repository for validation. They are no longer used by the build or deployed to
-Pages; the deployed `Release` is generated in `public/`. Both will be removed
-after the new pipeline has been verified on a device.
+Binary packages are not stored in this repository. They are published as GitHub
+Release assets in their source repositories. The root `Release` file and the
+`Packages` indexes are generated at build time inside `public/`.
 
 ## Pages URL
 

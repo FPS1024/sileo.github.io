@@ -3,6 +3,9 @@ __pycache__/
 *.pyc
 .DS_Store
 
+debs/
+/Release
+
 /Packages
 /Packages.bz2
 /Packages.gz
