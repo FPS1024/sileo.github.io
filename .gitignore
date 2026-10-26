@@ -1,0 +1,9 @@
+public/
+__pycache__/
+*.pyc
+.DS_Store
+
+/Packages
+/Packages.bz2
+/Packages.gz
+/Packages.xz

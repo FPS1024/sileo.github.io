@@ -5,11 +5,16 @@ on:
     branches:
       - main
     paths:
-      - 'debs/**'
-      - 'Release'
+      - 'config/**'
+      - 'scripts/**'
       - 'index.html'
       - 'styles.css'
+      - '.nojekyll'
+      - 'CydiaIcon*.png'
       - '.github/workflows/repo.yml'
+  schedule:
+    # Check the source repositories for new releases every six hours.
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -29,39 +34,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Install APT tools
+      - name: Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y dpkg-dev bzip2 gzip xz-utils
+          sudo apt-get install -y zstd
 
-      - name: Generate Packages
-        run: |
-          set -e
-
-          rm -f Packages Packages.bz2 Packages.gz Packages.xz
-
-          if find debs -type f -name '*.deb' | grep -q .; then
-            dpkg-scanpackages -m debs /dev/null > Packages
-          else
-            echo "No .deb packages found."
-            touch Packages
-          fi
-
-          bzip2 -kf Packages
-          gzip -kf Packages
-          xz -kf Packages
-
-          echo "===== Packages ====="
-          cat Packages
-
-      - name: Prepare Pages artifact
-        run: |
-          touch .nojekyll
-
-          echo "===== Repository files ====="
-          find . -maxdepth 2 -type f \
-            ! -path './.git/*' \
-            -print | sort
+      - name: Build repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/build_repo.py --out public
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -69,7 +50,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: public
 
   deploy:
     environment:

@@ -4,67 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="FPS1024 personal APT repository for iOS and iPadOS.">
-    <meta name="theme-color" content="#147d64">
+    <meta name="theme-color" content="#f2f2f2">
+    <meta name="color-scheme" content="light">
     <title>FPS1024 Sileo Repo</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+
     <header class="site-header">
-        <div class="shell header-inner">
-            <div class="brand">
+        <div class="wrap header-inner">
+            <a class="brand" href="./">
                 <span class="brand-mark" aria-hidden="true">F</span>
-                <span>
-                    <strong class="brand-name">FPS1024</strong>
-                    <span class="brand-subtitle">iOS software repository</span>
+                <span class="brand-text">
+                    <span class="brand-name">FPS1024 Sileo Repo</span>
+                    <span class="brand-tagline">Personal APT repository for iOS and iPadOS</span>
                 </span>
-            </div>
-            <span class="status">
-                <span class="status-dot" aria-hidden="true"></span>
-                Online
-            </span>
+            </a>
+            <span class="header-meta">iphoneos-arm64 &middot; stable</span>
         </div>
     </header>
 
-    <main>
-        <section class="shell overview">
-            <div class="intro">
-                <p class="category">Personal APT repository</p>
-                <h1>FPS1024 Sileo Repo</h1>
-                <p class="lead">
-                    A lightweight package source for jailbroken iOS and iPadOS devices.
-                    Package indexes are rebuilt automatically by GitHub Actions.
-                </p>
-                <div class="actions">
-                    <a class="button button-primary" href="https://github.com/FPS1024/sileo.github.io">
-                        View on GitHub
-                    </a>
-                    <a class="text-link" href="Packages">Browse package index</a>
-                </div>
-            </div>
+    <nav class="site-nav" aria-label="Site">
+        <div class="wrap nav-inner">
+            <a href="#overview">Overview</a>
+            <a href="#add-source">Add the source</a>
+            <a href="#packages">Packages</a>
+            <a href="#package-index">Index files</a>
+            <a href="https://github.com/FPS1024/sileo.github.io">GitHub</a>
+        </div>
+    </nav>
 
-            <dl class="stats" aria-label="Repository details">
-                <div class="stat">
-                    <dt>Architecture</dt>
-                    <dd>iphoneos-arm64</dd>
-                </div>
-                <div class="stat">
-                    <dt>Release</dt>
-                    <dd>Stable / iOS</dd>
-                </div>
-                <div class="stat stat-wide">
-                    <dt>Index formats</dt>
-                    <dd>Packages, bz2, gz, xz</dd>
-                </div>
-            </dl>
-        </section>
+    <main id="content" class="wrap layout">
+        <article class="content">
+            <h1>FPS1024 Sileo Repo</h1>
+            <p class="page-note">Personal APT repository for jailbroken iOS and iPadOS devices.</p>
 
-        <section class="shell source-section" aria-labelledby="source-heading">
-            <div class="section-heading">
-                <p class="category">Source URL</p>
-                <h2 id="source-heading">Add this repository to Sileo</h2>
-            </div>
+            <h2 id="overview">Overview</h2>
+            <p>
+                This is a personal package source maintained by FPS1024. It currently serves
+                a small set of packages built for the <code>iphoneos-arm64</code> architecture.
+            </p>
+            <p>
+                Packages are built and published as GitHub Releases in their own source
+                repositories. This site only provides the APT index and the package list.
+                A GitHub Actions workflow rebuilds both from those releases, and package
+                downloads are served directly by GitHub, so the published site stores no
+                binary packages.
+            </p>
 
-            <div class="source-box">
+            <h2 id="add-source">Add this repository to Sileo</h2>
+            <p>Add the following address as a source in Sileo:</p>
+
+            <div class="url-box">
                 <code id="repository-url">https://fps1024.github.io/sileo.github.io/</code>
                 <button
                     class="copy-button"
@@ -73,34 +65,120 @@
                     aria-label="Copy repository URL"
                 >
                     <svg aria-hidden="true" viewBox="0 0 24 24">
-                        <rect width="8" height="8" x="14" y="14" rx="2" ry="2"></rect>
+                        <rect width="8" height="8" x="14" y="14" rx="1" ry="1"></rect>
                         <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
                     </svg>
-                    <span class="copy-label">Copy</span>
+                    <span class="copy-label" aria-live="polite">Copy</span>
                 </button>
             </div>
 
             <ol class="steps">
-                <li>
-                    <span class="step-number">01</span>
-                    <span>Open Sileo and go to Sources.</span>
-                </li>
-                <li>
-                    <span class="step-number">02</span>
-                    <span>Tap + and paste the repository URL.</span>
-                </li>
-                <li>
-                    <span class="step-number">03</span>
-                    <span>Refresh the source, then install a package.</span>
-                </li>
+                <li>Open Sileo and go to <strong>Sources</strong>.</li>
+                <li>Tap <strong>+</strong> and paste the repository URL.</li>
+                <li>Refresh the source, then install a package.</li>
             </ol>
-        </section>
+
+            <h2 id="packages">Available packages</h2>
+            <p class="package-summary"><!-- PACKAGES_SUMMARY --></p>
+
+            <div class="table-wrap">
+                <table class="package-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Package</th>
+                            <th scope="col">Version</th>
+                            <th scope="col">Size</th>
+                            <th scope="col">Updated</th>
+                            <th scope="col">Download</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- PACKAGES_ROWS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 id="package-index">Package index</h2>
+            <p>
+                The build publishes the same index in four formats. The plain file is the
+                canonical one; the compressed variants are provided for clients that request
+                them.
+            </p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">File</th>
+                            <th scope="col">Compression</th>
+                            <th scope="col">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a href="Packages">Packages</a></td>
+                            <td>none</td>
+                            <td>Plain-text package index</td>
+                        </tr>
+                        <tr>
+                            <td><a href="Packages.bz2">Packages.bz2</a></td>
+                            <td>bzip2</td>
+                            <td>bzip2-compressed package index</td>
+                        </tr>
+                        <tr>
+                            <td><a href="Packages.gz">Packages.gz</a></td>
+                            <td>gzip</td>
+                            <td>gzip-compressed package index</td>
+                        </tr>
+                        <tr>
+                            <td><a href="Packages.xz">Packages.xz</a></td>
+                            <td>xz</td>
+                            <td>xz-compressed package index</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <aside class="sidebar" aria-label="Repository details">
+            <section class="box">
+                <h2 class="box-title">Repository details</h2>
+                <dl class="details">
+                    <dt>Architecture</dt>
+                    <dd>iphoneos-arm64</dd>
+                    <dt>Suite</dt>
+                    <dd>stable</dd>
+                    <dt>Codename</dt>
+                    <dd>ios</dd>
+                    <dt>Component</dt>
+                    <dd>main</dd>
+                </dl>
+            </section>
+
+            <section class="box">
+                <h2 class="box-title">Links</h2>
+                <ul class="link-list">
+                    <li><a href="https://github.com/FPS1024/sileo.github.io">Source on GitHub</a></li>
+                    <li><a href="Packages">Package index</a></li>
+                    <li><a href="packages.json">Package data (JSON)</a></li>
+                    <li><a href="Release">Release file</a></li>
+                    <li><a href="https://github.com/FPS1024/sileo.github.io#readme">Repository README</a></li>
+                </ul>
+            </section>
+        </aside>
     </main>
 
     <footer class="site-footer">
-        <div class="shell footer-inner">
-            <span>FPS1024 Sileo Repo</span>
-            <span>Powered by GitHub Pages</span>
+        <div class="wrap footer-inner">
+            <p>
+                <strong>FPS1024 Sileo Repo</strong> &mdash; a personal APT repository for
+                jailbroken iOS and iPadOS.
+            </p>
+            <p>
+                Hosted on <a href="https://pages.github.com/">GitHub Pages</a>. Package
+                indexes and the package list are rebuilt by
+                <a href="https://github.com/FPS1024/sileo.github.io/actions">GitHub Actions</a>.
+            </p>
         </div>
     </footer>
 

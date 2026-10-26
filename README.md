@@ -1,7 +1,9 @@
 # FPS1024 Sileo Repo
 
-A personal APT repository hosted on GitHub Pages. GitHub Actions scans the package
-directory and publishes fresh package indexes after every package update.
+A personal APT repository for jailbroken iOS and iPadOS, hosted on GitHub Pages.
+The published site contains no binary packages: package files live in the GitHub
+Releases of their source repositories, and this site publishes the APT indexes
+plus a small package browser.
 
 ## Add the Source
 
@@ -11,58 +13,91 @@ Open Sileo, go to `Sources`, tap `+`, and add:
 https://fps1024.github.io/sileo.github.io/
 ```
 
-Refresh the source after adding it. The repository generates these indexes:
+Refresh the source after adding it.
 
-- `Packages`
-- `Packages.bz2`
-- `Packages.gz`
-- `Packages.xz`
+## How It Works
 
-## Supported Architecture
+1. Each package repository publishes a `.deb` file as a GitHub Release asset.
+2. A scheduled GitHub Actions workflow reads each configured repository's newest
+   release, reads the package control metadata with HTTP Range requests, and
+   writes `Packages`, the compressed variants, and `Release`.
+3. The `Filename` field in the package index is the absolute GitHub Release URL
+   of the `.deb` asset.
+4. Sileo downloads the package directly from GitHub, then installs it from its
+   local package cache.
 
-The repository currently targets:
+Sileo supports absolute `http://` and `https://` download URLs in `Filename`.
+Standard APT and clients that concatenate `Filename` with the repository root do
+not, so this source is intended for Sileo.
 
-```text
-iphoneos-arm64
+## Adding a Package Repository
+
+Edit `config/repos.json` and add an entry:
+
+```json
+{
+  "repo": "FPS1024/Example",
+  "asset": "*.deb"
+}
 ```
 
-Verify a package before publishing it:
+The repository must be public and its release assets must include a `.deb` file.
+The workflow filters packages by the `Architecture` field in their control
+metadata, so unrelated architectures in the same release are ignored.
+
+## Updating Packages
+
+Publish a new GitHub Release in the package's source repository. The scheduled
+workflow checks every six hours; you can also run the workflow manually from the
+Actions tab for an immediate update.
+
+The index lists the newest release for each source repository. Keep published
+releases (or at least the tags used by the current index) so existing download
+URLs remain valid.
+
+## Local Build
+
+Requirements: Python 3.10+, `curl`, and optionally `dpkg-deb` and `zstd`.
 
 ```bash
-dpkg-deb -f debs/*.deb Package Version Architecture
+GH_TOKEN="$(gh auth token)" python3 scripts/build_repo.py --out public
+python3 -m http.server --directory public 8000
 ```
 
-## Publishing a Package
-
-1. Add the new DEB file to `debs/`.
-2. Keep older versions and assign a new package version instead of overwriting one.
-3. Verify the package metadata.
-4. Commit and push the change.
-
-```bash
-git add debs/
-git commit -m "Add package version"
-git push origin main
-```
-
-The GitHub Actions workflow then:
-
-1. Scans `debs/` for DEB files.
-2. Generates `Packages`, `Packages.bz2`, `Packages.gz`, and `Packages.xz`.
-3. Deploys the static repository files to GitHub Pages.
+Open `http://localhost:8000/`. The build refuses to publish an empty index.
 
 ## Repository Layout
 
 ```text
 .
 ├── .github/workflows/repo.yml
-├── debs/
-├── .nojekyll
-├── Release
+├── config/repos.json
+├── scripts/build_repo.py
 ├── index.html
 ├── styles.css
+├── .nojekyll
 └── README.md
 ```
+
+The workflow writes only generated files into `public/` and deploys that
+directory. `public/` is not committed.
+
+## Index Formats
+
+The build generates:
+
+- `Packages`
+- `Packages.bz2`
+- `Packages.gz`
+- `Packages.xz`
+- `Release` (with MD5 and SHA-256 checksums)
+
+## Migration Note
+
+The legacy `debs/` directory and the root `Release` file are still in the
+repository for validation. They are no longer used by the build or deployed to
+Pages; the deployed `Release` is generated in `public/`. Both will be removed
+after the new pipeline has been verified on a device.
 
 ## Pages URL
 

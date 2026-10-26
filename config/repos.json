@@ -1,0 +1,28 @@
+{
+  "origin": "FPS1024",
+  "label": "FPS1024 Repo",
+  "suite": "stable",
+  "codename": "ios",
+  "version": "1.0",
+  "description": "FPS1024 Personal Sileo Repository",
+  "architectures": [
+    "iphoneos-arm64"
+  ],
+  "include_arch_all": true,
+  "include_prereleases": false,
+  "release_scan_limit": 8,
+  "repositories": [
+    {
+      "repo": "FPS1024/Terminal",
+      "asset": "*.deb"
+    },
+    {
+      "repo": "FPS1024/codex",
+      "asset": "*.deb"
+    },
+    {
+      "repo": "FPS1024/Zola",
+      "asset": "*.deb"
+    }
+  ]
+}
