@@ -441,11 +441,16 @@ def resolve_asset(
 
 
 def packages_from_repo(
-    repo_config: dict[str, str],
+    repo_config: dict[str, object],
     config: dict[str, object],
 ) -> list[dict[str, object]]:
-    repo = repo_config["repo"]
-    pattern = repo_config.get("asset", "*.deb")
+    repo = str(repo_config["repo"])
+    pattern = str(repo_config.get("asset", "*.deb"))
+    raw_excludes = repo_config.get("exclude_assets", [])
+    if isinstance(raw_excludes, str):
+        excludes = [raw_excludes]
+    else:
+        excludes = [str(item) for item in raw_excludes]
     limit = int(config.get("release_scan_limit", 8))
     limit = max(1, min(limit, 100))
 
@@ -472,14 +477,20 @@ def packages_from_repo(
     target_architectures = set(config["architectures"])
 
     for release in candidates[:limit]:
-        assets = [
-            asset
-            for asset in release.get("assets", [])
-            if fnmatch.fnmatch(
-                str(asset.get("name") or "").lower(),
-                pattern.lower(),
-            )
-        ]
+        assets = []
+        for asset in release.get("assets", []):
+            asset_name = str(asset.get("name") or "")
+            lowered = asset_name.lower()
+            if not fnmatch.fnmatch(lowered, pattern.lower()):
+                continue
+            if any(
+                fnmatch.fnmatch(lowered, exclude.lower())
+                for exclude in excludes
+            ):
+                log(f"  {asset_name}: excluded by repository configuration")
+                continue
+            assets.append(asset)
+
         if not assets:
             continue
 
@@ -702,9 +713,43 @@ def write_packages_json(
     config: dict[str, object],
     packages: list[dict[str, object]],
     generated_at_iso: str,
+    packages_data: bytes,
 ) -> None:
+    entries = [
+        {
+            "package": package["package"],
+            "name": package["name"],
+            "version": package["version"],
+            "architecture": package["architecture"],
+            "description": package["description"],
+            "short_description": package["short_description"],
+            "section": package["section"],
+            "priority": package["priority"],
+            "depends": package["depends"],
+            "maintainer": package["maintainer"],
+            "author": package["author"],
+            "homepage": package["homepage"],
+            "size": package["size"],
+            "sha256": package["sha256"],
+            "filename": package["filename"],
+            "release_url": package["release_url"],
+            "source_repo": package["source_repo"],
+            "updated_at": package["updated_at"],
+        }
+        for package in packages
+    ]
+
+    hash_payload = packages_data + b"\n" + json.dumps(
+        entries,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
+    content_hash = hashlib.sha256(hash_payload).hexdigest()
+
     document = {
         "generated_at": generated_at_iso,
+        "content_hash": content_hash,
         "repository": {
             "origin": config["origin"],
             "label": config["label"],
@@ -712,29 +757,7 @@ def write_packages_json(
             "codename": config["codename"],
             "architectures": config["architectures"],
         },
-        "packages": [
-            {
-                "package": package["package"],
-                "name": package["name"],
-                "version": package["version"],
-                "architecture": package["architecture"],
-                "description": package["description"],
-                "short_description": package["short_description"],
-                "section": package["section"],
-                "priority": package["priority"],
-                "depends": package["depends"],
-                "maintainer": package["maintainer"],
-                "author": package["author"],
-                "homepage": package["homepage"],
-                "size": package["size"],
-                "sha256": package["sha256"],
-                "filename": package["filename"],
-                "release_url": package["release_url"],
-                "source_repo": package["source_repo"],
-                "updated_at": package["updated_at"],
-            }
-            for package in packages
-        ],
+        "packages": entries,
     }
 
     (out_dir / "packages.json").write_text(
@@ -824,6 +847,7 @@ def write_outputs(
         config,
         packages,
         generated_at_iso,
+        packages_data,
     )
 
 
@@ -864,7 +888,7 @@ def load_config(path: Path) -> dict[str, object]:
     if not isinstance(raw_repositories, list) or not raw_repositories:
         raise BuildError("config.repositories must be a non-empty list")
 
-    repositories: list[dict[str, str]] = []
+    repositories: list[dict[str, object]] = []
     for item in raw_repositories:
         if isinstance(item, str):
             item = {"repo": item}
@@ -876,7 +900,24 @@ def load_config(path: Path) -> dict[str, object]:
         asset = item.get("asset", "*.deb")
         if not isinstance(asset, str) or not asset:
             raise BuildError(f"invalid asset pattern for {repo}")
-        repositories.append({"repo": repo, "asset": asset})
+
+        raw_excludes = item.get("exclude_assets", [])
+        if isinstance(raw_excludes, str):
+            excludes = [raw_excludes]
+        elif isinstance(raw_excludes, list) and all(
+            isinstance(entry, str) and entry for entry in raw_excludes
+        ):
+            excludes = raw_excludes
+        else:
+            raise BuildError(f"invalid exclude_assets for {repo}")
+
+        repositories.append(
+            {
+                "repo": repo,
+                "asset": asset,
+                "exclude_assets": excludes,
+            }
+        )
 
     config["repositories"] = repositories
     return config

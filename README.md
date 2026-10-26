@@ -18,9 +18,11 @@ Refresh the source after adding it.
 ## How It Works
 
 1. Each package repository publishes a `.deb` file as a GitHub Release asset.
-2. A scheduled GitHub Actions workflow reads each configured repository's newest
-   release, reads the package control metadata with HTTP Range requests, and
-   writes `Packages`, the compressed variants, and `Release`.
+2. A GitHub Actions workflow runs every 15 minutes, or immediately when one of
+   our own repositories sends a `repository_dispatch` event. It reads each
+   configured repository's newest release, reads the package control metadata
+   with HTTP Range requests, and writes `Packages`, the compressed variants, and
+   `Release`.
 3. The `Filename` field in the package index is the absolute GitHub Release URL
    of the `.deb` asset.
 4. Sileo downloads the package directly from GitHub, then installs it from its
@@ -36,24 +38,51 @@ Edit `config/repos.json` and add an entry:
 
 ```json
 {
-  "repo": "FPS1024/Example",
-  "asset": "*.deb"
+  "repo": "owner/name",
+  "asset": "*.deb",
+  "exclude_assets": ["*iphoneos-arm64e*"]
 }
 ```
 
 The repository must be public and its release assets must include a `.deb` file.
-The workflow filters packages by the `Architecture` field in their control
-metadata, so unrelated architectures in the same release are ignored.
+This is an APT repository for Sileo: `.ipa` files cannot be installed through it.
+
+The build filters packages by the `Architecture` field in their control
+metadata. With `architectures` set to `iphoneos-arm64`, packages built for
+`iphoneos-arm64e` are ignored even when both variants are published in the same
+release. `exclude_assets` is an optional filename-level guard for releases that
+mix variants.
 
 ## Updating Packages
 
-Publish a new GitHub Release in the package's source repository. The scheduled
-workflow checks every six hours; you can also run the workflow manually from the
-Actions tab for an immediate update.
+Publish a new GitHub Release in the package's source repository. Repositories we
+control can send a `repository_dispatch` for an instant update; all other
+repositories are polled every 15 minutes. You can also run the workflow manually
+from the Actions tab.
 
 The index lists the newest release for each source repository. Keep published
 releases (or at least the tags used by the current index) so existing download
 URLs remain valid.
+
+## Instant Updates
+
+A repository cannot watch another repository's releases directly. To update this
+site immediately when one of your own repositories publishes a release:
+
+1. Create a fine-grained personal access token with access to
+   `FPS1024/sileo.github.io` and **Contents: Read and write** permission.
+2. Add it to each source repository as the secret `SILEO_DISPATCH_TOKEN`.
+3. Add this step to the source repository's release workflow:
+
+```yaml
+      - name: Notify Sileo repository
+        env:
+          GH_TOKEN: ${{ secrets.SILEO_DISPATCH_TOKEN }}
+        run: gh api repos/FPS1024/sileo.github.io/dispatches -f event_type=package-release
+```
+
+The receiving workflow listens for `package-release`. Third-party repositories
+cannot be modified this way, so they are picked up by the 15-minute schedule.
 
 ## Local Build
 

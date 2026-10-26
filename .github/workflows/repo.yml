@@ -12,9 +12,13 @@ on:
       - '.nojekyll'
       - 'CydiaIcon*.png'
       - '.github/workflows/repo.yml'
+  repository_dispatch:
+    types:
+      - package-release
   schedule:
-    # Check the source repositories for new releases every six hours.
-    - cron: '0 */6 * * *'
+    # Third-party repositories cannot dispatch events, so poll frequently.
+    # Repositories we control can dispatch for an instant update.
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -29,6 +33,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.changes.outputs.changed }}
 
     steps:
       - name: Checkout
@@ -37,17 +43,36 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y zstd
+          sudo apt-get install -y jq zstd
 
       - name: Build repository
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 scripts/build_repo.py --out public
 
+      - name: Check for changed packages
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          live_hash=$(curl -fsSL "https://fps1024.github.io/sileo.github.io/packages.json?cb=$(date +%s)" 2>/dev/null | jq -r '.content_hash // empty' || true)
+          built_hash=$(jq -r '.content_hash // empty' public/packages.json)
+
+          if [ -n "$live_hash" ] && [ "$live_hash" = "$built_hash" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No package changes; skipping deployment."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
+        if: steps.changes.outputs.changed == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
@@ -57,6 +82,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
+    if: needs.build.outputs.changed == 'true'
     runs-on: ubuntu-latest
     needs: build
 
